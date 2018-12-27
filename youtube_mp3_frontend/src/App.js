@@ -8,59 +8,78 @@ import Carousel from './components/carousel/carousel';
 import WeeklyTop from './components/weeklytop/weeklytop'
 
 const initialState = {
-  route:'signin',
+  input: '',
+  response:'',
+  route: 'signin',
   isSignedIn: false,
   user: {
     id: '',
     name: '',
-    email:''
+    email: ''
   }
 }
+
+
 class App extends Component {
 
-  constructor(){
+  constructor() {
     super();
     this.state = initialState;
   }
 
   loadUser = (data) => {
-    this.setState({user: 
-      {
-      id:data.id,
-      name:data.name,
-      email:data.email
-      }
-    }) 
+    this.setState({
+      user:
+        {
+          id: data.id,
+          name: data.name,
+          email: data.email
+        }
+    })
   }
 
   onRouteChange = (route) => {
-    if(route === 'signout') {
+    if (route === 'signout') {
       this.setState(initialState);
     }
     else if (route === 'home') {
-      this.setState({isSignedIn:true});
+      this.setState({ isSignedIn: true });
     }
-    this.setState({route:route});
+    this.setState({ route: route });
   }
 
   handleClick() {
-    this.setState({active:1})
+    this.setState({ active: 1 })
   }
 
-  render() {
-    return (
-      <div className="App">
-        {
-          this.state.route==='home' ?
+  onInputChange = (event) => {
+    this.setState({ input: event.target.value });
+  }
+
+  onSubmit = () => {
+    this.setState({ imageUrl: this.state.input });
+    fetch(`http://localhost:7070/song?vid=${this.state.input}`)
+      .then(response => {                            
+        this.setState(response) 
+      })        
+      .catch (err => console.log(err));
+  }
+
+
+render() {
+  return (
+    <div className="App">
+      {
+        this.state.route === 'home' ?
           <div className='flex'>
-            <SideMenu isSignedIn={this.state.isSignedIn} onRouteChange={this.onRouteChange}/>
+            <SideMenu isSignedIn={this.state.isSignedIn} onRouteChange={this.onRouteChange} />
             <div className='cardsection flex flex-column'>
               <div className=''>
-                <SearchBar isSignedIn={this.state.isSignedIn} onRouteChange={this.onRouteChange}/>
+                <SearchBar isSignedIn={this.state.isSignedIn} onRouteChange={this.onRouteChange} onInputChange={this.onInputChange} onSubmit={this.onSubmit} />
               </div>
               <div className=''>
                 <p className='f3 bb b--white blue w-25 pa1 mt4 '>Recommendations</p>
-                <Carousel/>
+                <Carousel />
               </div>
               <div className='weekly'>
                 <p className='f3 bb b--white blue w-25 pa1 mt4'>Weekly tops</p>
@@ -69,14 +88,14 @@ class App extends Component {
             </div>
           </div>
           : (
-          (this.state.route==='signin')||(this.state.route==='signout') ?
-          <SignIn loadUser={this.loadUser} onRouteChange={this.onRouteChange}/>
-          :<Register loadUser={this.loadUser} onRouteChange={this.onRouteChange}/>  
-           )
-        }
-      </div>
-    );
-  }
+            (this.state.route === 'signin') || (this.state.route === 'signout') ?
+              <SignIn loadUser={this.loadUser} onRouteChange={this.onRouteChange} />
+              : <Register loadUser={this.loadUser} onRouteChange={this.onRouteChange} />
+          )
+      }
+    </div>
+  );
+}
 }
 
 export default App;
